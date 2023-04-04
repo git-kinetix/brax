@@ -17,6 +17,7 @@
 
 from typing import List, Optional, Union
 
+import jax
 import brax
 from brax.base import State, System
 from brax.io import json
@@ -24,12 +25,12 @@ from etils import epath
 import jinja2
 
 
-def save(path: str, sys: System, states: List[State]):
+def save(path: str, sys: System, states: List[State], observations: List[jax.numpy.array] = []):
   """Saves trajectory as an HTML text file."""
   path = epath.Path(path)
   if not path.parent.exists():
     path.parent.mkdir(parents=True)
-  path.write_text(render(sys, states))
+  path.write_text(render(sys, states, observations=observations))
 
 
 def render_from_json(
@@ -42,7 +43,7 @@ def render_from_json(
   js_url = base_url
   if base_url is None:
     base_url = 'https://cdn.jsdelivr.net/gh/google/brax'
-    js_url = f'{base_url}@v{brax.__version__}/brax/visualizer/js/viewer.js'
+    js_url = f'https://cdn.jsdelivr.net/gh/google/brax@1d5fbd7/brax/visualizer/js/viewer.js'
 
   html = template.render(
       system_json=sys, height=height, js_url=js_url, colab=colab
@@ -53,6 +54,7 @@ def render_from_json(
 def render(
     sys: System,
     states: List[State],
+    observations: List[jax.numpy.array] = [],
     height: Union[int, str] = 480,
     colab: bool = True,
     base_url: Optional[str] = None,
@@ -62,6 +64,7 @@ def render(
   Args:
     sys: brax System object
     states: list of system states to render
+    observations: list of observation vectors to log
     height: the height of the render window
     colab: whether to use css styles for colab
     base_url: the base url for serving the visualizer files. By default, a CDN
@@ -70,4 +73,4 @@ def render(
   Returns:
     string containing HTML for the brax visualizer
   """
-  return render_from_json(json.dumps(sys, states), height, colab, base_url)
+  return render_from_json(json.dumps(sys, states, observations), height, colab, base_url)

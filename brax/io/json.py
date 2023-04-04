@@ -89,12 +89,13 @@ def _take_i(d, i):
   return new_d
 
 
-def dumps(sys: System, states: List[State]) -> Text:
+def dumps(sys: System, states: List[State], observations: List[jax.numpy.array] = []) -> Text:
   """Creates a json string of the system config.
 
   Args:
     sys: brax System object
     states: list of brax system states
+    observations: list of observations to log, optional, defaults to []
 
   Returns:
     string containing json dump of system and states
@@ -122,6 +123,7 @@ def dumps(sys: System, states: List[State]) -> Text:
 
   states = _to_dict(states)
   d['states'] = {k: states[k] for k in _STATE_ATTR}
+  d['obs'] = observations
 
   return json.dumps(_to_dict(d))
 
